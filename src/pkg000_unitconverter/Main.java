@@ -3,6 +3,8 @@ package pkg000_unitconverter;
     import javax.swing.*;
     import java.awt.*;
     import java.awt.event.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
     /**
       * Simple program which helps to convert amounts in one unint 
@@ -37,16 +39,23 @@ public class Main extends JFrame
     private JLabel oResultUnit = new JLabel("Output Result Unit");
     
     private JComboBox<String> sUnitCategory = new JComboBox<String>(); // unit category chooser
-    private JTextArea iUnitChooser = new JTextArea();  // input unit chooser
-    private JTextArea oUnitChooser = new JTextArea();  // output unit chooser
+    private DefaultListModel<String> iUnitChooserModel = new DefaultListModel<String>();
+    private DefaultListModel<String> oUnitChooserModel = new DefaultListModel<String>();
+    private JList<String> iUnitChooser = new JList<String>(iUnitChooserModel);  // input unit chooser
+    private JList<String> oUnitChooser = new JList<String>(oUnitChooserModel);  // output unit chooser
     private JScrollPane iUnitChooser_Scroll = new JScrollPane(iUnitChooser,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     private JScrollPane oUnitChooser_Scroll = new JScrollPane(oUnitChooser,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     
     private JTextField cArgument = new JTextField(); // conversion argument
     private JTextField cResult = new JTextField();   // conversion result
     
-    private Category Length = new Category("Lenght", new String[]{"Meter","Kilometer","Centimeter","Millimeter","Nanometer","Mile","Yard","Foot","Inch"}); 
-            
+    private Category cLength = new Category("Lenght", new String[]{"Meter","Kilometer","Centimeter","Millimeter","Nanometer","Mile","Yard","Foot","Inch"}); 
+    private Category cVolume = new Category("Volume", new String[]{"Cubic meter","Cubic kilometer","Cubic centimeter","Cubic millimeter","Liter","Milliliter","Cubic mile", "Cubic yard","Cubic foot", "Cubic inch"}); 
+    private Category cArea = new Category("Area", new String[]{"Square meter","Square kilometer","Square centimeter","Square millimeter","Hectare","Square mile","Square yard","Square foot","Square inch", "Acre"}); 
+    private Category cTemperature = new Category ("Temperature", new String[]{"Celsius", "Kelvin", "Farenheit"});
+    private Category cWeight = new Category ("Weight", new String[]{"Kilogram","Gram","Milligram","Metric ton","Long ton","Short ton","Pound","Ounce","Carrat","Atomic mass unit"});
+    private Category cTime = new Category ("Time", new String[]{"Second","Millisecond","Microsecond","Nanosecond","Picosecond","Minute","Hour","Day","Week","Month","Year"});
+    
     public Main()
     {
         
@@ -115,16 +124,83 @@ public class Main extends JFrame
                 sPanel.add(Box.createRigidArea(new Dimension(fWIDTH * 1/100,0)));
 
     /**
-     *  Building a main window and its components
+     *  Creating listener for category chooser
      */
-                
-//        this.addUnitCategory("");
-//        this.addUnitCategory("Lenght");
-//        this.addUnitCategory("Temperature");
-//        this.addUnitCategory("Area");
-//        this.addUnitCategory("Weight");
-//        this.addUnitCategory("Time");
+        sUnitCategory.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) 
+            {
+                if (((JComboBox)e.getSource()).getSelectedItem()== "Lenght") 
+                {
+                    iUnitChooserModel.clear();
+                    oUnitChooserModel.clear();
+                    for (String s: cLength.cUnits)
+                    {
+                    iUnitChooserModel.addElement(s);
+                    oUnitChooserModel.addElement(s);
+                    }
+                }
+                else if (((JComboBox)e.getSource()).getSelectedItem()== "Volume") 
+                {
+                    iUnitChooserModel.clear();
+                    oUnitChooserModel.clear();
+                    for (String s: cVolume.cUnits)
+                    {
+                    iUnitChooserModel.addElement(s);
+                    oUnitChooserModel.addElement(s);
+                    }        }
+                else if (((JComboBox)e.getSource()).getSelectedItem()== "Area") 
+                {
+                    iUnitChooserModel.clear();
+                    oUnitChooserModel.clear();
+                    for (String s: cArea.cUnits)
+                    {
+                    iUnitChooserModel.addElement(s);
+                    oUnitChooserModel.addElement(s);
+                    }
+                }
+                else if (((JComboBox)e.getSource()).getSelectedItem()== "Temperature") 
+                {
+                    iUnitChooserModel.clear();
+                    oUnitChooserModel.clear();
+                    for (String s: cTemperature.cUnits)
+                    {
+                    iUnitChooserModel.addElement(s);
+                    oUnitChooserModel.addElement(s);
+                    }
+                }
+                else if (((JComboBox)e.getSource()).getSelectedItem()== "Weight") 
+                {
+                    iUnitChooserModel.clear();
+                    oUnitChooserModel.clear();
+                    for (String s: cWeight.cUnits)
+                    {
+                    iUnitChooserModel.addElement(s);
+                    oUnitChooserModel.addElement(s);
+                    }
+                }
+                else if (((JComboBox)e.getSource()).getSelectedItem()== "Time") 
+                {
+                    iUnitChooserModel.clear();
+                    oUnitChooserModel.clear();
+                    for (String s: cTime.cUnits)
+                    {
+                    iUnitChooserModel.addElement(s);
+                    oUnitChooserModel.addElement(s);
+                    }
+                }
+            }
+        });
+        
+        iUnitChooser.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) 
+            {
 
+            }
+        });
+        
+        sUnitCategory.setSelectedIndex(0);
     }
     
     public static void main(String[] args) 
@@ -132,17 +208,16 @@ public class Main extends JFrame
         new Main().setVisible(true);
     }
     
-}
-
 class Category
 {
-    String cName;
-    String[] cUnits;
+    private String cName;
+    private String[] cUnits;
     
     public Category(String cName, String[] cUnits)
     {
         this.cName = cName;
         this.cUnits = cUnits;
+        sUnitCategory.addItem(cName);
     }
     
     public String getName()
@@ -150,14 +225,7 @@ class Category
         return cName;
     }
     
-    public void getUnits()
-    {
-        for (int i = 0; i < cUnits.length; i++)
-            System.out.println(cUnits[i]);
-    }
 }
 
-class Unit
-{
-    String uName;
 }
+
