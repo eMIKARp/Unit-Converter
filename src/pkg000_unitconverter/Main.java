@@ -3,8 +3,17 @@ package pkg000_unitconverter;
     import javax.swing.*;
     import java.awt.*;
     import java.awt.event.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.LinkedList;
+    import java.util.Map;
+    import javax.swing.event.ListSelectionEvent;
+    import javax.swing.event.ListSelectionListener;
+    import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
     /**
       * Simple program which helps to convert amounts in one unint 
@@ -48,13 +57,17 @@ public class Main extends JFrame
     
     private JTextField cArgument = new JTextField(); // conversion argument
     private JTextField cResult = new JTextField();   // conversion result
+
+    private Map<String, Category> cMatrix = new HashMap<String,Category>();
     
-    private Category cLength = new Category("Lenght", new String[]{"Meter","Kilometer","Centimeter","Millimeter","Nanometer","Mile","Yard","Foot","Inch"}); 
+    private Category cLenght = new Category("Lenght", new String[]{"Millimeter","Centimeter","Meter","Kilometer", "Inch", "Foot", "Yard","Mile"}); 
     private Category cVolume = new Category("Volume", new String[]{"Cubic meter","Cubic kilometer","Cubic centimeter","Cubic millimeter","Liter","Milliliter","Cubic mile", "Cubic yard","Cubic foot", "Cubic inch"}); 
     private Category cArea = new Category("Area", new String[]{"Square meter","Square kilometer","Square centimeter","Square millimeter","Hectare","Square mile","Square yard","Square foot","Square inch", "Acre"}); 
     private Category cTemperature = new Category ("Temperature", new String[]{"Celsius", "Kelvin", "Farenheit"});
     private Category cWeight = new Category ("Weight", new String[]{"Kilogram","Gram","Milligram","Metric ton","Long ton","Short ton","Pound","Ounce","Carrat","Atomic mass unit"});
     private Category cTime = new Category ("Time", new String[]{"Second","Millisecond","Microsecond","Nanosecond","Picosecond","Minute","Hour","Day","Week","Month","Year"});
+    
+    
     
     public Main()
     {
@@ -68,7 +81,6 @@ public class Main extends JFrame
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        
         this.getContentPane().add(mMenuBar, BorderLayout.NORTH);
             
             mMenuBar.add(mFile);
@@ -111,6 +123,7 @@ public class Main extends JFrame
                 Box sPanel_LeftVerticalPart = Box.createVerticalBox();
                 sPanel.add(sPanel_LeftVerticalPart);
                 cArgument.setPreferredSize(new Dimension(0, fHEIGHT/ 14));
+                sPanel_LeftVerticalPart.setPreferredSize(new Dimension(300,50));
                 sPanel_LeftVerticalPart.add(cArgument);
                 sPanel_LeftVerticalPart.add(Box.createRigidArea(new Dimension(0,fHEIGHT * 1/100)));
                 sPanel_LeftVerticalPart.add(iResultUnit);
@@ -118,6 +131,7 @@ public class Main extends JFrame
                 Box sPanel_RightVerticalPart = Box.createVerticalBox();
                 sPanel.add(sPanel_RightVerticalPart);
                 cResult.setPreferredSize(new Dimension(0, fHEIGHT / 14));
+                sPanel_RightVerticalPart.setPreferredSize(new Dimension(300, 50));
                 sPanel_RightVerticalPart.add(cResult);
                 sPanel_RightVerticalPart.add(Box.createRigidArea(new Dimension(0,fHEIGHT * 1/100)));
                 sPanel_RightVerticalPart.add(oResultUnit);
@@ -134,7 +148,7 @@ public class Main extends JFrame
                 {
                     iUnitChooserModel.clear();
                     oUnitChooserModel.clear();
-                    for (String s: cLength.cUnits)
+                    for (String s: cMatrix.get("Lenght").cUnits)
                     {
                     iUnitChooserModel.addElement(s);
                     oUnitChooserModel.addElement(s);
@@ -144,7 +158,7 @@ public class Main extends JFrame
                 {
                     iUnitChooserModel.clear();
                     oUnitChooserModel.clear();
-                    for (String s: cVolume.cUnits)
+                    for (String s: cMatrix.get("Volume").cUnits)
                     {
                     iUnitChooserModel.addElement(s);
                     oUnitChooserModel.addElement(s);
@@ -153,7 +167,7 @@ public class Main extends JFrame
                 {
                     iUnitChooserModel.clear();
                     oUnitChooserModel.clear();
-                    for (String s: cArea.cUnits)
+                    for (String s: cMatrix.get("Area").cUnits)
                     {
                     iUnitChooserModel.addElement(s);
                     oUnitChooserModel.addElement(s);
@@ -163,7 +177,7 @@ public class Main extends JFrame
                 {
                     iUnitChooserModel.clear();
                     oUnitChooserModel.clear();
-                    for (String s: cTemperature.cUnits)
+                    for (String s: cMatrix.get("Temperature").cUnits)
                     {
                     iUnitChooserModel.addElement(s);
                     oUnitChooserModel.addElement(s);
@@ -173,7 +187,7 @@ public class Main extends JFrame
                 {
                     iUnitChooserModel.clear();
                     oUnitChooserModel.clear();
-                    for (String s: cWeight.cUnits)
+                    for (String s: cMatrix.get("Weight").cUnits)
                     {
                     iUnitChooserModel.addElement(s);
                     oUnitChooserModel.addElement(s);
@@ -183,7 +197,7 @@ public class Main extends JFrame
                 {
                     iUnitChooserModel.clear();
                     oUnitChooserModel.clear();
-                    for (String s: cTime.cUnits)
+                    for (String s: cMatrix.get("Time").cUnits)
                     {
                     iUnitChooserModel.addElement(s);
                     oUnitChooserModel.addElement(s);
@@ -196,28 +210,58 @@ public class Main extends JFrame
             @Override
             public void valueChanged(ListSelectionEvent e) 
             {
-
+                String tmp = (String)((JList)e.getSource()).getSelectedValue();
+                iResultUnit.setText(tmp);
+                //cArgument.setText(cMatrix.get(tmp));
             }
         });
         
+        oUnitChooser.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) 
+            {
+                oResultUnit.setText((String)((JList)e.getSource()).getSelectedValue());
+            }
+        });
+        
+        cMatrix.put("Lenght", cLenght); 
+        cMatrix.put("Volume", cVolume); 
+        cMatrix.put("Area", cArea); 
+        cMatrix.put("Temperature", cTemperature);
+        cMatrix.put("Weight", cWeight);
+        cMatrix.put("Time", cTime);
+    
         sUnitCategory.setSelectedIndex(0);
+        iUnitChooser.setSelectedIndex(0);
+        oUnitChooser.setSelectedIndex(0);
+        
+        cMatrix.get("Temperature").crm.addConversionRatesToMatrix("Temperature", 3);
+        cMatrix.get("Area").crm.addConversionRatesToMatrix("Area", 10);
+        cMatrix.get("Lenght").crm.addConversionRatesToMatrix("Lenght", 8);
+        cMatrix.get("Time").crm.addConversionRatesToMatrix("Time", 11);
+        cMatrix.get("Volume").crm.addConversionRatesToMatrix("Volume", 10);
+        cMatrix.get("Weight").crm.addConversionRatesToMatrix("Weight", 10);
+        
     }
     
     public static void main(String[] args) 
     {
-        new Main().setVisible(true);
+       new Main().setVisible(true);
     }
     
 class Category
 {
     private String cName;
     private String[] cUnits;
+    private ConversionRatesMatrix crm;
     
     public Category(String cName, String[] cUnits)
     {
         this.cName = cName;
         this.cUnits = cUnits;
         sUnitCategory.addItem(cName);
+        crm = new ConversionRatesMatrix(cName, cUnits);
+        
     }
     
     public String getName()
@@ -227,5 +271,54 @@ class Category
     
 }
 
+class ConversionRatesMatrix
+{
+    private Map<String, double[]> crm = new HashMap<String, double[]>();
+    private double[] cu; 
+    
+    public ConversionRatesMatrix(String cName, String[] cUnits)
+    {
+        
+        for (String s: cUnits)
+        {
+            cu = new double[cUnits.length];
+            crm.put(s, cu);
+        }
+    }
+    
+    public double getConversionRate(String cName, int index)
+    {
+        return crm.get(cName)[index];
+    }
+    
+    public void addConversionRatesToMatrix(String cName, int nOfUnits)
+    {
+        try {
+            
+            File file = new File(cName+".txt");
+            Scanner input = new Scanner (file);
+            
+            for (int i = 0; i < nOfUnits; i ++)
+            {
+                for (int j = 0; j < nOfUnits; j ++)
+                {
+                    cu[j] = Double.parseDouble(input.nextLine());
+                }
+            }
+            
+            input.close();
+            
+        } 
+        catch (FileNotFoundException ex) 
+        {
+            ex.getMessage();
+        }
+    }
+    
 }
 
+}
+
+
+
+    
